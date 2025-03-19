@@ -36,7 +36,7 @@ public class InsertData {
                     // Generate random data
                     String studentName = names[rand.nextInt(names.length)] + i;
                     String studentStatus = status[rand.nextInt(status.length)];
-                    String mobile = "99999" + String.format("%05d", i);
+                    String mobile = "44369" + String.format("%05d", i);
                     String email = studentName.toLowerCase() + "@abc.com";
 
                     // Insert into MySQL
