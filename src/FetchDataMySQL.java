@@ -22,19 +22,23 @@ public class FetchDataMySQL {
             Class.forName("com.mysql.cj.jdbc.Driver");
             System.out.println("Driver loaded successfully!");
 
-            // Initialize Redis Connection
+            // Initialize Redis and MySQL connections
             try (Jedis jedis = new Jedis(redisHost, redisPort);
                  Connection conn = DriverManager.getConnection(url, user, password);
                  PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
                 System.out.println("Connected to Redis and MySQL!");
 
-                // Measure MySQL Query Time
-                long mysqlStartTime = System.currentTimeMillis();
+                long totalMySQLFetchTime = 0;
+                long totalRedisFetchTime = 0;
 
-                // Fetch 100 records from MySQL
+                // Fetch 100 records from random locations
                 for (int i = 0; i < 100; i++) {
                     int randomId = random.nextInt(1000) + 1;
+                    String cacheKey = "student:" + randomId;
+
+                    // **Measure MySQL Query Time**
+                    long mysqlStartTime = System.currentTimeMillis();
                     pstmt.setInt(1, randomId);
 
                     try (ResultSet rs = pstmt.executeQuery()) {
@@ -45,44 +49,38 @@ public class FetchDataMySQL {
                                     ", Mobile: " + rs.getString("mobile") +
                                     ", Email: " + rs.getString("email");
 
-                            System.out.println(studentData);
+                            long mysqlEndTime = System.currentTimeMillis();
+                            long mysqlFetchTime = mysqlEndTime - mysqlStartTime;
+                            totalMySQLFetchTime += mysqlFetchTime;
+
+                            System.out.println("From MySQL: " + studentData);
+                            System.out.println("MySQL Query for ID " + randomId + " executed in " + mysqlFetchTime + " ms");
 
                             // Store data in Redis with a 1-hour expiration time
-                            jedis.setex("student:" + randomId, 3600, studentData);
+                            jedis.setex(cacheKey, 3600, studentData);
                         } else {
-                            System.out.println("Student with ID " + randomId + " not found.");
+                            System.out.println("Student with ID " + randomId + " not found in MySQL.");
                         }
                     }
-                }
 
-                long mysqlEndTime = System.currentTimeMillis();
-                System.out.println("MySQL Fetch Time: " + (mysqlEndTime - mysqlStartTime) + " ms");
-
-                // Measure Redis Query Time
-                long redisStartTime = System.currentTimeMillis();
-                long totalRedisFetchTime = 0;
-
-                // Fetch the same 100 records from Redis
-                for (int i = 0; i < 100; i++) {
-                    int randomId = random.nextInt(1000) + 1;
-                    String cacheKey = "student:" + randomId;
-
-                    long singleStartTime = System.currentTimeMillis();
+                    // **Measure Redis Query Time**
+                    long redisStartTime = System.currentTimeMillis();
                     if (jedis.exists(cacheKey)) {
-                        String data = jedis.get(cacheKey);
-                        long singleEndTime = System.currentTimeMillis();
-                        long fetchTime = singleEndTime - singleStartTime;
-                        totalRedisFetchTime += fetchTime;
-                        System.out.println("From Redis: " + data);
-                        System.out.println("Redis Query for ID " + randomId + " executed in " + fetchTime + " ms");
+                        String cachedData = jedis.get(cacheKey);
+                        long redisEndTime = System.currentTimeMillis();
+                        long redisFetchTime = redisEndTime - redisStartTime;
+                        totalRedisFetchTime += redisFetchTime;
+
+                        System.out.println("From Redis: " + cachedData);
+                        System.out.println("Redis Query for ID " + randomId + " executed in " + redisFetchTime + " ms");
                     } else {
                         System.out.println("Data not found in Redis for Student ID: " + randomId);
                     }
                 }
 
-                long redisEndTime = System.currentTimeMillis();
-                System.out.println("Redis Total Fetch Time: " + (redisEndTime - redisStartTime) + " ms");
-                System.out.println("Calculated Total Redis Fetch Time (Summed): " + totalRedisFetchTime + " ms");
+                System.out.println("Total MySQL Fetch Time: " + totalMySQLFetchTime + " ms");
+                System.out.println("Total Redis Fetch Time: " + totalRedisFetchTime + " ms");
+
             }
         } catch (Exception e) {
             e.printStackTrace();
