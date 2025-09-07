@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="D:/sem vise project mca/sem IV/mysql-connector-j-9.2.0/mysql-connector-j-9.2.0/mysql-connector-j-9.2.0.jar"/>
-	<classpathentry kind="lib" path="D:/sem vise project mca/sem IV/jedis-5.2.0.jar" sourcepath="bin/jedis-5.2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/swapn/Documents/Internship-SVERI/internship task/jedis-5.2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/swapn/Documents/Internship-SVERI/internship task/mysql-connector-j-9.2.0/mysql-connector-j-9.2.0/mysql-connector-j-9.2.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

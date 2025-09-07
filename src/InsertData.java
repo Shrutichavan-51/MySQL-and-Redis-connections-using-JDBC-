@@ -36,7 +36,7 @@ public class InsertData {
                     // Generate random data
                     String studentName = names[rand.nextInt(names.length)] + i;
                     String studentStatus = status[rand.nextInt(status.length)];
-                    String mobile = "44369" + String.format("%05d", i);
+                    String mobile = "44368" + String.format("%05d", i);
                     String email = studentName.toLowerCase() + "@abc.com";
 
                     // Insert into MySQL
@@ -47,13 +47,21 @@ public class InsertData {
                     pstmt.executeUpdate();
 
                     // Insert into Redis
+                 // Insert into Redis
                     String key = "student:" + i;
+
+                    // Ensure no conflicting keys
+                    if (!jedis.type(key).equals("hash") && jedis.exists(key)) {
+                        jedis.del(key); // Delete if it exists and is not a hash
+                    }
+
                     jedis.hset(key, "name", studentName);
                     jedis.hset(key, "status", studentStatus);
                     jedis.hset(key, "mobile", mobile);
                     jedis.hset(key, "email", email);
 
                     System.out.println("Inserted Student " + i + " into MySQL and Redis.");
+
                 }
                 System.out.println("1000 records inserted successfully!");
             }
